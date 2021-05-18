@@ -3,7 +3,7 @@ import { EMPTY_OBJ } from '@tarojs/shared'
 import { document } from '../bom/document'
 import { TaroElement } from './element'
 import { CurrentReconciler } from '../reconciler'
-import { isParentBinded } from '../utils'
+// import { isParentBinded } from '../utils'
 
 interface EventOptions {
   bubbles: boolean;
@@ -109,19 +109,27 @@ export function eventHandler (event: MpEvent) {
     if (typeof CurrentReconciler.batchedEventUpdates === 'function') {
       const type = event.type
 
-      if (!isParentBinded(node, type) || (type === 'touchmove' && !!node.props.catchMove)) {
-        // 最上层组件统一 batchUpdate
-        CurrentReconciler.batchedEventUpdates(() => {
-          if (eventsBatch[type]) {
-            eventsBatch[type].forEach(fn => fn())
-            delete eventsBatch[type]
-          }
-          dispatch()
-        })
-      } else {
-        // 如果上层组件也有绑定同类型的组件，委托给上层组件调用事件回调
-        (eventsBatch[type] ||= []).push(dispatch)
-      }
+      // 不做上层判断，直接调用
+      CurrentReconciler.batchedEventUpdates(() => {
+        if (eventsBatch[type]) {
+          eventsBatch[type].forEach(fn => fn())
+          delete eventsBatch[type]
+        }
+        dispatch()
+      })
+      // if (!isParentBinded(node, type) || (type === 'touchmove' && !!node.props.catchMove)) {
+      //   // 最上层组件统一 batchUpdate
+      //   CurrentReconciler.batchedEventUpdates(() => {
+      //     if (eventsBatch[type]) {
+      //       eventsBatch[type].forEach(fn => fn())
+      //       delete eventsBatch[type]
+      //     }
+      //     dispatch()
+      //   })
+      // } else {
+      //   // 如果上层组件也有绑定同类型的组件，委托给上层组件调用事件回调
+      //   (eventsBatch[type] ||= []).push(dispatch)
+      // }
     } else {
       dispatch()
     }
